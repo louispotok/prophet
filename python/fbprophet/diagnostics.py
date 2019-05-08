@@ -198,7 +198,8 @@ def performance_metrics(df, metrics=None, rolling_window=0.1):
     'mse': mean squared error
     'rmse': root mean squared error
     'mae': mean absolute error
-    'mape': mean percent error
+    'mape': mean absolute percent error
+    'mdape': median absolute percent error
     'coverage': coverage of the upper and lower intervals
 
     A subset of these can be specified by passing a list of names as the
@@ -221,7 +222,7 @@ def performance_metrics(df, metrics=None, rolling_window=0.1):
     ----------
     df: The dataframe returned by cross_validation.
     metrics: A list of performance metrics to compute. If not provided, will
-        use ['mse', 'rmse', 'mae', 'mape', 'coverage'].
+        use ['mse', 'rmse', 'mae', 'mape', 'mdape', 'coverage'].
     rolling_window: Proportion of data to use in each rolling window for
         computing the metrics. Should be in [0, 1].
 
@@ -229,7 +230,7 @@ def performance_metrics(df, metrics=None, rolling_window=0.1):
     -------
     Dataframe with a column for each metric, and column 'horizon'
     """
-    valid_metrics = ['mse', 'rmse', 'mae', 'mape', 'coverage']
+    valid_metrics = ['mse', 'rmse', 'mae', 'mape', 'mdape', 'coverage']
     if metrics is None:
         metrics = valid_metrics
     if len(set(metrics)) != len(metrics):
@@ -340,6 +341,24 @@ def mape(df, w):
     """
     ape = np.abs((df['y'] - df['yhat']) / df['y'])
     return rolling_mean(ape.values, w)
+
+
+def mdape(df, w):
+    """Median absolute percent error
+
+    Parameters
+    ----------
+    df: Cross-validation results dataframe
+    w: Aggregation window size
+
+    Returns
+    -------
+    Array of median absolute percent errors
+    """
+    ape = pd.Series(np.abs((df['y'] - df['yhat']) / df['y']))
+    if w == 0:
+        return ape
+    return ape.rolling(w).median()
 
 
 def smape(df, w):

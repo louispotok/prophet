@@ -116,7 +116,7 @@ class TestDiagnostics(TestCase):
         df_none = diagnostics.performance_metrics(df_cv, rolling_window=0)
         self.assertEqual(
             set(df_none.columns),
-            {'horizon', 'coverage', 'mae', 'mape', 'mse', 'rmse'},
+            {'horizon', 'coverage', 'mae', 'mape', 'mdape', 'mse', 'rmse'},
         )
         self.assertEqual(df_none.shape[0], 16)
         # Aggregation level 0.2
@@ -128,6 +128,7 @@ class TestDiagnostics(TestCase):
         self.assertEqual(df_all.shape[0], 1)
         for metric in ['mse', 'mape', 'mae', 'coverage']:
             self.assertEqual(df_all[metric].values[0], df_none[metric].mean())
+        self.assertEqual(df_all['mdape'].values[0], df_none['mdape'].median())
         # Custom list of metrics
         df_horizon = diagnostics.performance_metrics(
             df_cv, metrics=['coverage', 'mse'],
